@@ -189,15 +189,15 @@ td.r,th.r{text-align:right}
    Paste your two values from Supabase > Project Settings > API.
    The anon / publishable key is meant to be public; your data is
    protected by the sign-in and the security rules in the SQL file. */
-const SUPABASE_URL = 'https://bwnrovwuybqdhbdgldls.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_1elFtqnh32US1VgouPhLfQ_nU_PMI2Q';
+const SUPABASE_URL = 'https://YOUR-PROJECT-ID.supabase.co';
+const SUPABASE_KEY = 'YOUR-ANON-OR-PUBLISHABLE-KEY';
 /* ===================================================== */
 
 const SIZES = ['M','L','XL','XXL','XXXL','4XL'];
 const PAYS = ['Cash','UPI','Card'];
 const LS_KEY = 'twoedits-shop-v1';
 const OB_KEY = 'twoedits-outbox-v1';
-const COL = { M: 'received_m', L: 'received_l', XL: 'received_xl', XXL: 'received_xxl', XXXL: 'received_xxxl', '4XL': 'received_4xl' };
+const COL = { M: 'in_shop_m', L: 'in_shop_l', XL: 'in_shop_xl', XXL: 'in_shop_xxl', XXXL: 'in_shop_xxxl', '4XL': 'in_shop_4xl' };
 const configured = !/YOUR-/.test(SUPABASE_URL + SUPABASE_KEY);
 
 let state = { products: [], sales: [] };
@@ -220,7 +220,7 @@ function niceDate(s) {
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
 function loadLocal() {
-  try { const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (s && Array.isArray(s.products)) return { products: s.products, sales: s.sales || [] }; } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (s && Array.isArray(s.products)) return normalizeState({ products: s.products, sales: s.sales || [] }); } catch (e) {}
   return null;
 }
 function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} }
@@ -230,9 +230,25 @@ function soldMap(sales = state.sales) {
   for (const s of sales) { (m[s.sku] ||= {}); m[s.sku][s.size] = (m[s.sku][s.size] || 0) + (s.qty || 1); }
   return m;
 }
-function remainingOf(p, sold) { const r = {}; for (const z of SIZES) r[z] = (p.stock?.[z] || 0) - (sold[p.sku]?.[z] || 0); return r; }
+// p.inShop = pieces on the rail now (the number stored in Supabase). Sales lower it.
+function remainingOf(p) { const r = {}; for (const z of SIZES) r[z] = p.inShop?.[z] || 0; return r; }
+// Everything ever received = on the rail now + already sold (used for reports).
+function receivedOf(p, sold) { const r = remainingOf(p); for (const z of SIZES) r[z] += sold[p.sku]?.[z] || 0; return r; }
 const totalOf = r => SIZES.reduce((a, z) => a + r[z], 0);
-const shownSizes = (p, r) => SIZES.filter(z => (p.stock?.[z] || 0) > 0 || r[z] !== 0);
+const shownSizes = (p, r, sold) => SIZES.filter(z => r[z] !== 0 || (sold[p.sku]?.[z] || 0) > 0);
+// Older data stored pieces received; convert it to pieces on the rail.
+function normalizeState(st) {
+  st.sales = st.sales || [];
+  const sold = soldMap(st.sales);
+  st.products = (st.products || []).map(p => {
+    if (p.inShop) { const { stock, ...rest } = p; return rest; }
+    const inShop = {};
+    SIZES.forEach(z => { const n = (p.stock?.[z] || 0) - (sold[p.sku]?.[z] || 0); if (n) inShop[z] = n; });
+    const { stock, ...rest } = p; return { ...rest, inShop };
+  });
+  return st;
+}
+function adjustShop(sku, size, delta) { const p = findP(sku); if (!p) return; p.inShop = { ...(p.inShop || {}) }; p.inShop[size] = (p.inShop[size] || 0) + delta; }
 const findP = sku => state.products.find(p => p.sku === sku);
 function putProduct(p) { const i = state.products.findIndex(x => x.sku === p.sku); if (i >= 0) state.products[i] = p; else state.products.push(p); }
 function putSale(s) { const i = state.sales.findIndex(x => x.id === s.id); if (i >= 0) state.sales[i] = s; else state.sales.push(s); }
@@ -240,12 +256,12 @@ function putSale(s) { const i = state.sales.findIndex(x => x.id === s.id); if (i
 /* ---------- Supabase row mapping ---------- */
 function productToRow(p) {
   const r = { sku: p.sku, name: p.name || '', supplier: p.supplier || '', cost: +p.cost || 0, landed: +p.landed || 0, price: +p.price || 0, flag: p.flag || '' };
-  SIZES.forEach(z => r[COL[z]] = p.stock?.[z] || 0);
+  SIZES.forEach(z => r[COL[z]] = p.inShop?.[z] || 0);
   return r;
 }
 function rowToProduct(r) {
-  const stock = {}; SIZES.forEach(z => { const n = +r[COL[z]] || 0; if (n) stock[z] = n; });
-  return { sku: r.sku, name: r.name || '', supplier: r.supplier || '', cost: +r.cost || 0, landed: +r.landed || 0, price: +r.price || 0, stock, flag: r.flag || '' };
+  const inShop = {}; SIZES.forEach(z => { const n = +r[COL[z]] || 0; if (n) inShop[z] = n; });
+  return { sku: r.sku, name: r.name || '', supplier: r.supplier || '', cost: +r.cost || 0, landed: +r.landed || 0, price: +r.price || 0, inShop, flag: r.flag || '' };
 }
 function saleToRow(s) { return { id: s.id, sku: s.sku, size: s.size, qty: s.qty || 1, price: +s.price || 0, cost: +s.cost || 0, pay: s.pay || '', date: s.date, note: s.note || '', ts: s.ts || Date.now() }; }
 function rowToSale(r) { return { id: r.id, sku: r.sku, size: r.size, qty: +r.qty || 1, price: +r.price || 0, cost: +r.cost || 0, pay: r.pay || '', date: r.date, note: r.note || '', ts: +r.ts || 0 }; }
@@ -256,11 +272,13 @@ const errText = e => (e && (e.message || e.code)) || 'unknown error';
 
 /* ---------- outbox: changes waiting to reach Supabase ---------- */
 let outbox = (() => { try { const a = JSON.parse(localStorage.getItem(OB_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } })();
+outbox = outbox.filter(o => !(o.row && 'received_m' in o.row));
 function saveOutbox() { try { localStorage.setItem(OB_KEY, JSON.stringify(outbox)); } catch (e) {} }
 
 async function runOp(op) {
   let res;
   if (op.t === 'up_product') res = await sb.from('products').upsert(op.row);
+  else if (op.t === 'patch_product') res = await sb.from('products').update(op.patch).eq('sku', op.sku);
   else if (op.t === 'del_product') res = await sb.from('products').delete().eq('sku', op.sku);
   else if (op.t === 'up_sale') res = await sb.from('sales').upsert(op.row);
   else if (op.t === 'del_sale') res = await sb.from('sales').delete().eq('id', op.id);
@@ -310,8 +328,9 @@ async function loadCloud() {
 }
 async function uploadAll(products, sales) {
   const chunks = (a, n) => { const o = []; for (let i = 0; i < a.length; i += n) o.push(a.slice(i, i + n)); return o; };
-  for (const c of chunks(products.map(productToRow), 500)) { const { error } = await sb.from('products').upsert(c); if (error) throw error; }
+  // Sales first: the database lowers stock for each sale, and these products already hold their on-rail counts.
   for (const c of chunks(sales.map(saleToRow), 500)) { const { error } = await sb.from('sales').upsert(c); if (error) throw error; }
+  for (const c of chunks(products.map(productToRow), 500)) { const { error } = await sb.from('products').upsert(c); if (error) throw error; }
 }
 
 async function startCloud() {
@@ -330,7 +349,7 @@ async function startCloud() {
 }
 
 async function offerUpload() {
-  const src = (() => { const l = loadLocal(); return l && (l.products.length || l.sales.length) ? l : clone(SEED); })();
+  const src = (() => { const l = loadLocal(); return l && (l.products.length || l.sales.length) ? l : normalizeState(clone(SEED)); })();
   const ok = await askConfirm('Move your shop into Supabase?', 'Supabase is empty. Upload ' + src.products.length + ' products and ' + src.sales.length + ' sales from this phone?', 'Upload now');
   if (!ok) { state = { products: [], sales: [] }; subscribe(); setSync(); render(); return; }
   toast('Uploading… keep the app open.');
@@ -523,7 +542,7 @@ function viewSell() {
   list.sort((a, b) => (totalOf(remainingOf(b, sold)) > 0) - (totalOf(remainingOf(a, sold)) > 0));
   if (!list.length) return h + '<div class="empty"><b>Nothing matches “' + esc(ui.q) + '”</b>Try a colour, or a SKU like TE-012.</div>';
   h += list.map(p => {
-    const r = remainingOf(p, sold); const sz = shownSizes(p, r);
+    const r = remainingOf(p, sold); const sz = shownSizes(p, r, sold);
     const btns = sz.length ? sz.map(z => '<button class="sz' + (r[z] < 0 ? ' neg' : '') + '" data-sell="' + esc(p.sku) + '" data-size="' + z + '"' + (r[z] <= 0 ? ' disabled' : '') + '><b>' + z + '</b><small class="num">' + (r[z] <= 0 ? (r[z] < 0 ? r[z] + ' left' : 'sold out') : r[z] + ' left') + '</small></button>').join('')
       : '<span class="hint">No stock entered. Add it in the Stock tab.</span>';
     return '<article class="prod"><div class="prod-head"><div><div class="name">' + esc(p.name) + '</div><div class="meta"><span>' + esc(p.sku) + '</span><span>' + esc(p.supplier) + '</span></div></div><div class="price num">' + rs(p.price) + '</div></div><div class="sizes">' + btns + '</div></article>';
@@ -531,16 +550,16 @@ function viewSell() {
   return h;
 }
 
-function stockStatus(p, r) {
+function stockStatus(p, r, sold) {
   const tot = totalOf(r);
   const neg = SIZES.some(z => r[z] < 0);
-  return { tot, neg, out: tot <= 0, low: tot > 0 && SIZES.some(z => (p.stock?.[z] || 0) > 0 && r[z] === 0), check: neg || !!p.flag };
+  return { tot, neg, out: tot <= 0, low: tot > 0 && SIZES.some(z => r[z] === 0 && (sold[p.sku]?.[z] || 0) > 0), check: neg || !!p.flag };
 }
 
 function viewStock() {
   const sold = soldMap();
   let pcs = 0, atCost = 0, atPrice = 0;
-  const rows = state.products.map(p => { const r = remainingOf(p, sold); const st = stockStatus(p, r); const t = Math.max(0, st.tot); pcs += t; atCost += t * (p.landed || p.cost || 0); atPrice += t * (p.price || 0); return { p, r, st }; });
+  const rows = state.products.map(p => { const r = remainingOf(p, sold); const st = stockStatus(p, r, sold); const t = Math.max(0, st.tot); pcs += t; atCost += t * (p.landed || p.cost || 0); atPrice += t * (p.price || 0); return { p, r, st }; });
   let h = '<div class="strip"><div><div class="sub">In the shop now</div><div class="big num">' + pcs + ' pcs</div></div><div class="sub num" style="text-align:right">' + rs(atCost) + ' at cost<br>' + rs(atPrice) + ' at selling price</div></div>';
   h += searchBox('Search stock');
   const counts = { all: rows.length, low: rows.filter(x => x.st.low).length, out: rows.filter(x => x.st.out).length, check: rows.filter(x => x.st.check).length };
@@ -551,7 +570,7 @@ function viewStock() {
   const list = rows.filter(x => (!q || (x.p.name + ' ' + x.p.sku + ' ' + x.p.supplier).toLowerCase().includes(q)) && (ui.stockFilter === 'all' || x.st[ui.stockFilter]));
   if (!list.length) h += '<div class="empty"><b>Nothing here</b>No products match this filter.</div>';
   h += list.map(({ p, r, st }) => {
-    const sz = shownSizes(p, r);
+    const sz = shownSizes(p, r, sold);
     const pills = sz.length ? sz.map(z => '<div class="pill' + (r[z] < 0 ? ' neg' : r[z] === 0 ? ' zero' : '') + '"><b class="num">' + r[z] + '</b><small>' + z + '</small></div>').join('') : '<span class="hint">No stock entered yet. Tap to add.</span>';
     const flag = st.neg ? '<div class="flag">Sold more than stocked. Recount this item.</div>' : p.flag ? '<div class="flag">' + esc(p.flag) + '</div>' : '';
     return '<article class="prod tap" data-edit="' + esc(p.sku) + '" tabindex="0"><div class="prod-head"><div><div class="name">' + esc(p.name) + '</div><div class="meta"><span>' + esc(p.sku) + '</span><span>' + esc(p.supplier) + '</span><span class="num">Cost ' + rs(p.landed || p.cost) + '</span></div></div><div class="price num">' + rs(p.price) + '</div></div>' + flag + '<div class="sizes">' + pills + '</div></article>';
@@ -641,7 +660,8 @@ function viewReport() {
     h += '<div class="card"><h2>Best sellers</h2><table><tbody>' + top.map(([k, v]) => { const p = findP(k); return '<tr><td>' + esc(p ? p.name : k) + '<div class="hint">' + esc(k) + '</div></td><td class="r num">' + v.pcs + ' pcs</td><td class="r num"><b>' + rs(v.rev) + '</b></td></tr>'; }).join('') + '</tbody></table></div>';
   }
 
-  const bought = state.products.reduce((a, p) => a + SIZES.reduce((b, z) => b + (p.stock?.[z] || 0), 0) * (p.landed || p.cost || 0), 0);
+  const soldAll = soldMap();
+  const bought = state.products.reduce((a, p) => a + totalOf(receivedOf(p, soldAll)) * (p.landed || p.cost || 0), 0);
   const allRev = state.sales.reduce((a, s) => a + s.price * (s.qty || 1), 0);
   if (bought) h += '<div class="card"><h2>Money back from stock</h2><div class="kpis"><div class="kpi"><div class="v num">' + rs(allRev) + '</div><div class="l">Sales, all time</div></div><div class="kpi"><div class="v num">' + rs(bought) + '</div><div class="l">Spent on stock, incl. expenses</div></div></div><div class="bar" style="margin-top:12px;height:10px"><span style="width:' + Math.min(100, allRev / bought * 100) + '%"></span></div><p class="hint">' + Math.round(allRev / bought * 100) + '% of what you spent has come back as sales.</p></div>';
 
@@ -696,7 +716,7 @@ function sellSheet(sku, size) {
         const price = +sh.querySelector('#sp').value;
         if (!(price >= 0)) { toast('Enter a price.'); return; }
         const s = { id: uid(), sku: p.sku, size, qty, price, cost: p.landed || p.cost || 0, pay, date: sh.querySelector('#sd').value || todayStr(), note: sh.querySelector('#sn').value.trim(), ts: Date.now() };
-        state.sales.push(s); saveLocal(); closeSheet(); render();
+        state.sales.push(s); adjustShop(p.sku, size, -qty); saveLocal(); closeSheet(); render();
         toast('Sold ' + p.name + ', ' + size + ' for ' + rs(price * qty), () => removeSale(s.id));
         await write({ t: 'up_sale', row: saleToRow(s) });
       };
@@ -704,7 +724,8 @@ function sellSheet(sku, size) {
 }
 
 async function removeSale(id) {
-  state.sales = state.sales.filter(s => s.id !== id); saveLocal(); render();
+  const s = state.sales.find(x => x.id === id); if (!s) return;
+  state.sales = state.sales.filter(x => x.id !== id); adjustShop(s.sku, s.size, s.qty || 1); saveLocal(); render();
   await write({ t: 'del_sale', id });
 }
 async function deleteSale(id) {
@@ -723,7 +744,7 @@ function nextSku() {
 
 function editSheet(sku) {
   const isNew = !sku;
-  const p = isNew ? { sku: nextSku(), name: '', supplier: '', cost: 0, landed: 0, price: 0, stock: {}, flag: '' } : clone(findP(sku));
+  const p = isNew ? { sku: nextSku(), name: '', supplier: '', cost: 0, landed: 0, price: 0, inShop: {}, flag: '' } : clone(findP(sku));
   const sold = soldMap();
   const r = remainingOf(p, sold);
   const sups = [...new Set(state.products.map(x => x.supplier).filter(Boolean))];
@@ -750,8 +771,9 @@ function editSheet(sku) {
         p.cost = +sh.querySelector('#ec').value || 0;
         p.landed = +sh.querySelector('#el').value || p.cost;
         p.price = +sh.querySelector('#ep').value || 0;
-        p.stock = {};
-        SIZES.forEach(z => { const now = Math.max(0, Math.floor(+sh.querySelector('#z' + z).value || 0)); const t = now + (sold[p.sku]?.[z] || 0); if (t) p.stock[z] = t; });
+        const before = { ...(p.inShop || {}) };
+        p.inShop = {};
+        SIZES.forEach(z => { const now = Math.max(0, Math.floor(+sh.querySelector('#z' + z).value || 0)); if (now) p.inShop[z] = now; });
         const ef = sh.querySelector('#ef'); if (ef && ef.checked) p.flag = '';
         const row = productToRow(p);
         okBtn.disabled = true; okBtn.textContent = 'Saving…';
@@ -769,7 +791,14 @@ function editSheet(sku) {
           // network problem: fall through and queue it
         }
         putProduct(p); saveLocal(); closeSheet(); render();
-        const ok = await write({ t: 'up_product', row });
+        let op = { t: 'up_product', row };
+        if (!isNew) {
+          // Send only the sizes you changed, so a sale made on another phone isn't overwritten.
+          const patch = { name: p.name, supplier: p.supplier, cost: p.cost, landed: p.landed, price: p.price, flag: p.flag || '' };
+          SIZES.forEach(z => { if ((before[z] || 0) !== (p.inShop[z] || 0)) patch[COL[z]] = p.inShop[z] || 0; });
+          op = { t: 'patch_product', sku: p.sku, patch };
+        }
+        const ok = await write(op);
         toast(ok ? (isNew ? 'Added to Supabase.' : 'Saved to Supabase.') : 'No connection. Saved on this phone, uploads automatically later.');
       };
       const rm = sh.querySelector('[data-rm]');
@@ -787,7 +816,7 @@ function editSheet(sku) {
 function csv(rows) { return rows.map(r => r.map(v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\n'); }
 async function exportData(kind) {
   const d = todayStr(); let filename, data;
-  if (kind === 'json') { filename = 'two-edits-backup-' + d + '.json'; data = JSON.stringify({ app: 'two-edits-shop', version: 1, savedAt: new Date().toISOString(), products: state.products, sales: state.sales }, null, 1); }
+  if (kind === 'json') { filename = 'two-edits-backup-' + d + '.json'; const soldB = soldMap(); const prods = state.products.map(p => { const rcv = receivedOf(p, soldB); const stock = {}; SIZES.forEach(z => { if (rcv[z]) stock[z] = rcv[z]; }); return { ...p, stock }; }); data = JSON.stringify({ app: 'two-edits-shop', version: 2, savedAt: new Date().toISOString(), products: prods, sales: state.sales }, null, 1); }
   else if (kind === 'stock') {
     const sold = soldMap();
     const rows = [['SKU', 'Product', 'Supplier', 'Purchase price', 'Cost incl. expenses', 'Selling price', ...SIZES.map(z => 'In shop ' + z), 'In shop total', ...SIZES.map(z => 'Sold ' + z), 'Sold total']];
@@ -812,7 +841,8 @@ async function restore(file) {
   if (!b || !Array.isArray(b.products) || !Array.isArray(b.sales)) { toast('That file isn’t a Two Edits backup.'); return; }
   const ok = await askConfirm('Replace everything with this backup?', b.products.length + ' products and ' + b.sales.length + ' sales. What’s in the app and in Supabase now will be replaced.', 'Restore backup', true);
   if (!ok) return;
-  state = { products: b.products, sales: b.sales }; saveLocal(); render();
+  b = normalizeState({ products: b.products, sales: b.sales });
+  state = b; saveLocal(); render();
   if (sb && session) {
     toast('Restoring to Supabase… keep the app open.');
     outbox.length = 0; saveOutbox();
