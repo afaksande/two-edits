@@ -3,6 +3,6 @@
 // The anon key is safe to keep here: the database only lets signed-in shop accounts in.
 // Leave them empty and the app will ask for them on first open instead.
 window.TWO_EDITS_CONFIG = {
-  supabaseUrl: '',      // e.g. 'https://abcdefgh.supabase.co'
-  supabaseAnonKey: ''   // e.g. 'eyJhbGciOi...' or 'sb_publishable_...'
+  supabaseUrl: 'https://bwnrovwuybqdhbdgldls.supabase.co',      // e.g. 'https://abcdefgh.supabase.co'
+  supabaseAnonKey: 'sb_publishable_1elFtqnh32US1VgouPhLfQ_nU_PMI2Q'   // e.g. 'eyJhbGciOi...' or 'sb_publishable_...'
 };
