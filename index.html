@@ -4,23 +4,173 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Two Edits Shop</title>
-<link rel="icon" href="https://ik.imagekit.io/ygahvlfht/01AFAEAF-0D37-43FF-94F9-3D5AF9B2F04F.PNG">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#8E2848">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Two Edits">
-<link rel="apple-touch-icon" href="https://ik.imagekit.io/ygahvlfht/01AFAEAF-0D37-43FF-94F9-3D5AF9B2F04F.PNG">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --bg:#F1F2F4; --surface:#FFFFFF; --ink:#1C2230; --muted:#5F6878; --line:#E2E4E9;
+  --accent:#8E2848; --accent-ink:#FFFFFF; --accent-soft:#F7E6EC;
+  --ok:#21704C; --ok-soft:#E2F2E9; --warn:#9C5A0B; --warn-soft:#FCEFD9;
+  --bad:#B42318; --bad-soft:#FDE7E5; --shade:rgba(20,22,30,.45);
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#11141A; --surface:#1A1F28; --ink:#ECEEF2; --muted:#A0A8B6; --line:#2B313C;
+    --accent:#E8819F; --accent-ink:#200A12; --accent-soft:#3A1D28;
+    --ok:#62C595; --ok-soft:#173327; --warn:#EBA752; --warn-soft:#382813;
+    --bad:#F28B80; --bad-soft:#3C1C1A; --shade:rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11141A; --surface:#1A1F28; --ink:#ECEEF2; --muted:#A0A8B6; --line:#2B313C;
+  --accent:#E8819F; --accent-ink:#200A12; --accent-soft:#3A1D28;
+  --ok:#62C595; --ok-soft:#173327; --warn:#EBA752; --warn-soft:#382813;
+  --bad:#F28B80; --bad-soft:#3C1C1A; --shade:rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hind",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input,select{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px 10px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;max-width:720px;margin:0 auto}
+.brand h1{margin:0;font-size:1.3rem;font-weight:700;letter-spacing:-.01em}
+.brand h1 span{color:var(--accent)}
+.sync{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync.on i{background:var(--ok)}
+.sync.local i{background:var(--warn)}
+
+main{max-width:720px;margin:0 auto;padding:14px 14px 96px}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs[hidden]{display:none}
+nav.tabs button{background:none;border:0;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.78rem;font-weight:500;color:var(--muted);cursor:pointer}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button[aria-current="page"]{color:var(--accent)}
+nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
+
+.strip{display:flex;justify-content:space-between;align-items:flex-end;margin:2px 2px 12px;gap:12px}
+.strip .big{font-size:1.9rem;font-weight:700;line-height:1;letter-spacing:-.02em}
+.strip .sub{color:var(--muted);font-size:.9rem}
+
+.search{position:relative;margin-bottom:10px}
+.search input{width:100%;padding:12px 14px 11px 42px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:1rem}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--muted)}
+input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -14px;padding-left:14px;padding-right:14px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 13px 5px;font-size:.88rem;font-weight:500;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.prod{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 12px 12px;margin-bottom:10px}
+.prod.tap{cursor:pointer}
+.prod-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.prod .name{font-weight:600;font-size:1.05rem;line-height:1.25}
+.prod .meta{font-size:.82rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-top:2px}
+.prod .price{font-weight:700;white-space:nowrap}
+.flag{display:inline-block;font-size:.78rem;font-weight:600;color:var(--warn);background:var(--warn-soft);border-radius:6px;padding:2px 7px 1px;margin-top:6px}
+.sizes{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.sz{min-width:58px;border:1.5px solid var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:10px;padding:6px 10px 5px;display:flex;flex-direction:column;align-items:center;line-height:1.1;cursor:pointer}
+.sz b{font-size:.95rem}
+.sz small{font-size:.75rem;color:var(--muted)}
+.sz:disabled{border-color:var(--line);background:transparent;color:var(--muted);cursor:not-allowed;opacity:.7}
+.sz.neg{border-color:var(--bad);background:var(--bad-soft)}
+.pill{min-width:50px;border:1px solid var(--line);border-radius:9px;padding:4px 8px 3px;text-align:center;line-height:1.1}
+.pill b{display:block;font-size:.95rem}
+.pill small{font-size:.72rem;color:var(--muted)}
+.pill.zero{opacity:.5}
+.pill.low{border-color:var(--warn);background:var(--warn-soft)}
+.pill.neg{border-color:var(--bad);background:var(--bad-soft)}
+
+.empty{text-align:center;color:var(--muted);padding:40px 16px}
+.empty b{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:4px}
+
+.btn{border:0;border-radius:12px;padding:13px 18px 12px;font-weight:600;font-size:1rem;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.block{width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn:focus-visible,.chip:focus-visible,.sz:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.fab{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:1.02rem;margin:0 0 10px;font-weight:600}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kpi .v{font-size:1.35rem;font-weight:700;line-height:1.1}
+.kpi .l{font-size:.85rem;color:var(--muted)}
+.hero-v{font-size:2.3rem;font-weight:700;line-height:1;letter-spacing:-.02em;margin:4px 0 2px}
+.scroll-x{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:.8rem;padding:4px 6px 6px;border-bottom:1px solid var(--line)}
+td{padding:7px 6px 6px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;min-width:60px}
+.bar span{display:block;height:100%;background:var(--accent)}
+.tip{background:var(--ok-soft);color:var(--ink);border-radius:10px;padding:10px 12px 9px;font-size:.92rem;margin-top:10px}
+
+.day{margin-bottom:14px}
+.day-h{display:flex;justify-content:space-between;font-weight:600;padding:0 4px 6px;font-size:.95rem}
+.day-h span:last-child{color:var(--muted);font-weight:500}
+.row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 6px 9px 12px;margin-bottom:6px}
+.row .main{flex:1;min-width:0}
+.row .t{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s{font-size:.8rem;color:var(--muted)}
+.row .amt{font-weight:600;white-space:nowrap}
+.x{border:0;background:none;color:var(--muted);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:1.2rem;line-height:1}
+.x:hover{background:var(--bad-soft);color:var(--bad)}
+
+.sheet-wrap{position:fixed;inset:0;z-index:20;background:var(--shade);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:92%;overflow-y:auto;border-radius:18px 18px 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));animation:up .18s ease-out}
+@media (min-width:600px){.sheet-wrap{align-items:center}.sheet{border-radius:18px;padding-bottom:18px}}
+@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 10px}
+.sheet h2{margin:0 0 2px;font-size:1.2rem}
+.sheet .lead{color:var(--muted);margin:0 0 14px;font-size:.92rem}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px;font-weight:500}
+.field input,.field select{width:100%;padding:11px 12px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:1rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sizegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sizegrid label{font-size:.85rem;color:var(--muted);font-weight:500}
+.sizegrid input{width:100%;padding:9px 10px 8px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:1rem;text-align:center}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--bg);padding:10px 0 9px;font-weight:500;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:max-content}
+.stepper button{border:0;background:var(--bg);width:44px;height:44px;font-size:1.3rem;cursor:pointer}
+.stepper span{min-width:48px;text-align:center;font-weight:600}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 12px;padding-top:12px;border-top:1px solid var(--line)}
+.total b{font-size:1.5rem}
+.actions{display:flex;gap:10px}
+.actions .btn{flex:1}
+.hint{font-size:.82rem;color:var(--muted);margin-top:4px}
+.gate{max-width:420px;margin:28px auto 0}
+.gate code{font-size:.85rem;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px 9px 16px;display:flex;gap:14px;align-items:center;max-width:calc(100% - 28px);font-size:.95rem;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast button{background:none;border:0;color:var(--accent-soft);font-weight:700;cursor:pointer;padding:4px 6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
 </head>
 <body>
 <header class="top">
   <div class="brand">
-    <h1 class="logo"><img src="https://ik.imagekit.io/ygahvlfht/01AFAEAF-0D37-43FF-94F9-3D5AF9B2F04F.PNG" alt="Two Edits" onerror="this.remove();document.getElementById('brandtext').hidden=false"><span id="brandtext" hidden>Two <em>Edits</em></span></h1>
+    <h1>Two <span>Edits</span></h1>
     <div class="sync" id="sync"><i></i><span>Loading…</span></div>
   </div>
 </header>
@@ -34,7 +184,658 @@
   <button data-tab="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Report</button>
 </nav>
 
-<script src="js/config.js"></script>
-<script src="js/app.js"></script>
+<script>
+/* ================= SUPABASE SETTINGS =================
+   Paste your two values from Supabase > Project Settings > API.
+   The anon / publishable key is meant to be public; your data is
+   protected by the sign-in and the security rules in the SQL file. */
+const SUPABASE_URL = 'https://YOUR-PROJECT-ID.supabase.co';
+const SUPABASE_KEY = 'YOUR-ANON-OR-PUBLISHABLE-KEY';
+/* ===================================================== */
+
+const SIZES = ['M','L','XL','XXL','XXXL','4XL'];
+const PAYS = ['Cash','UPI','Card'];
+const LS_KEY = 'twoedits-shop-v1';
+const OB_KEY = 'twoedits-outbox-v1';
+const COL = { M: 'received_m', L: 'received_l', XL: 'received_xl', XXL: 'received_xxl', XXXL: 'received_xxxl', '4XL': 'received_4xl' };
+const configured = !/YOUR-/.test(SUPABASE_URL + SUPABASE_KEY);
+
+let state = { products: [], sales: [] };
+let mode = 'starting';            // starting | setup | login | cloud | offline
+let sb = null, session = null, channel = null;
+let ui = { tab: 'sell', q: '', supplier: 'All', stockFilter: 'all', period: 'today', salesLimit: 40 };
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rs = n => '₹' + Math.round(Number(n) || 0).toLocaleString('en-IN');
+const clone = o => JSON.parse(JSON.stringify(o));
+function todayStr(d = new Date()) { const z = n => String(n).padStart(2,'0'); return d.getFullYear() + '-' + z(d.getMonth()+1) + '-' + z(d.getDate()); }
+function niceDate(s) {
+  const t = todayStr(); const y = todayStr(new Date(Date.now() - 864e5));
+  if (s === t) return 'Today'; if (s === y) return 'Yesterday';
+  const d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function loadLocal() {
+  try { const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (s && Array.isArray(s.products)) return { products: s.products, sales: s.sales || [] }; } catch (e) {}
+  return null;
+}
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} }
+
+function soldMap(sales = state.sales) {
+  const m = {};
+  for (const s of sales) { (m[s.sku] ||= {}); m[s.sku][s.size] = (m[s.sku][s.size] || 0) + (s.qty || 1); }
+  return m;
+}
+function remainingOf(p, sold) { const r = {}; for (const z of SIZES) r[z] = (p.stock?.[z] || 0) - (sold[p.sku]?.[z] || 0); return r; }
+const totalOf = r => SIZES.reduce((a, z) => a + r[z], 0);
+const shownSizes = (p, r) => SIZES.filter(z => (p.stock?.[z] || 0) > 0 || r[z] !== 0);
+const findP = sku => state.products.find(p => p.sku === sku);
+function putProduct(p) { const i = state.products.findIndex(x => x.sku === p.sku); if (i >= 0) state.products[i] = p; else state.products.push(p); }
+function putSale(s) { const i = state.sales.findIndex(x => x.id === s.id); if (i >= 0) state.sales[i] = s; else state.sales.push(s); }
+
+/* ---------- Supabase row mapping ---------- */
+function productToRow(p) {
+  const r = { sku: p.sku, name: p.name || '', supplier: p.supplier || '', cost: +p.cost || 0, landed: +p.landed || 0, price: +p.price || 0, flag: p.flag || '' };
+  SIZES.forEach(z => r[COL[z]] = p.stock?.[z] || 0);
+  return r;
+}
+function rowToProduct(r) {
+  const stock = {}; SIZES.forEach(z => { const n = +r[COL[z]] || 0; if (n) stock[z] = n; });
+  return { sku: r.sku, name: r.name || '', supplier: r.supplier || '', cost: +r.cost || 0, landed: +r.landed || 0, price: +r.price || 0, stock, flag: r.flag || '' };
+}
+function saleToRow(s) { return { id: s.id, sku: s.sku, size: s.size, qty: s.qty || 1, price: +s.price || 0, cost: +s.cost || 0, pay: s.pay || '', date: s.date, note: s.note || '', ts: s.ts || Date.now() }; }
+function rowToSale(r) { return { id: r.id, sku: r.sku, size: r.size, qty: +r.qty || 1, price: +r.price || 0, cost: +r.cost || 0, pay: r.pay || '', date: r.date, note: r.note || '', ts: +r.ts || 0 }; }
+
+// Network problems are retried later; database refusals are not.
+const isNetErr = e => !e || !e.code || /^PGRST30/.test(e.code) || /fetch|network|timeout|load failed/i.test(e.message || '');
+const errText = e => (e && (e.message || e.code)) || 'unknown error';
+
+/* ---------- outbox: changes waiting to reach Supabase ---------- */
+let outbox = (() => { try { const a = JSON.parse(localStorage.getItem(OB_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } })();
+function saveOutbox() { try { localStorage.setItem(OB_KEY, JSON.stringify(outbox)); } catch (e) {} }
+
+async function runOp(op) {
+  let res;
+  if (op.t === 'up_product') res = await sb.from('products').upsert(op.row);
+  else if (op.t === 'del_product') res = await sb.from('products').delete().eq('sku', op.sku);
+  else if (op.t === 'up_sale') res = await sb.from('sales').upsert(op.row);
+  else if (op.t === 'del_sale') res = await sb.from('sales').delete().eq('id', op.id);
+  if (res && res.error) throw res.error;
+}
+
+let flushP = null;
+function flush() {
+  if (!flushP) { flushP = doFlush().finally(() => { flushP = null; setSync(); }); setSync(); }
+  return flushP;
+}
+async function doFlush() {
+  if (!sb || !session || !outbox.length) return;
+  while (outbox.length) {
+    const op = outbox[0];
+    try { await runOp(op); }
+    catch (e) {
+      if (isNetErr(e)) { if (mode === 'cloud') mode = 'offline'; return; }
+      console.error('Supabase refused', e, op);
+      toast('Supabase refused a change: ' + errText(e));
+    }
+    outbox.shift(); saveOutbox();
+  }
+  if (mode === 'offline') { mode = 'cloud'; subscribe(); }
+}
+async function write(op) {
+  outbox.push(op); saveOutbox(); setSync();
+  await flush();
+  if (outbox.includes(op) && mode === 'cloud') await flush();
+  return !outbox.includes(op);
+}
+
+/* ---------- loading from Supabase ---------- */
+async function fetchAll(table, order) {
+  const out = [], step = 1000;
+  for (let from = 0; ; from += step) {
+    const { data, error } = await sb.from(table).select('*').order(order).range(from, from + step - 1);
+    if (error) throw error;
+    out.push(...data);
+    if (data.length < step) break;
+  }
+  return out;
+}
+async function loadCloud() {
+  const [pr, sr] = await Promise.all([fetchAll('products', 'sku'), fetchAll('sales', 'ts')]);
+  return { products: pr.map(rowToProduct), sales: sr.map(rowToSale) };
+}
+async function uploadAll(products, sales) {
+  const chunks = (a, n) => { const o = []; for (let i = 0; i < a.length; i += n) o.push(a.slice(i, i + n)); return o; };
+  for (const c of chunks(products.map(productToRow), 500)) { const { error } = await sb.from('products').upsert(c); if (error) throw error; }
+  for (const c of chunks(sales.map(saleToRow), 500)) { const { error } = await sb.from('sales').upsert(c); if (error) throw error; }
+}
+
+async function startCloud() {
+  mode = 'cloud'; setSync();
+  try {
+    await flush();
+    if (outbox.length) throw { message: 'offline' };
+    const c = await loadCloud();
+    if (!c.products.length && !c.sales.length) { render(); await offerUpload(); return; }
+    state = c; saveLocal(); subscribe();
+  } catch (e) {
+    mode = 'offline';
+    if (!isNetErr(e)) toast('Couldn’t read Supabase: ' + errText(e) + '. Check that the setup SQL was run.');
+  }
+  setSync(); render();
+}
+
+async function offerUpload() {
+  const src = (() => { const l = loadLocal(); return l && (l.products.length || l.sales.length) ? l : clone(SEED); })();
+  const ok = await askConfirm('Move your shop into Supabase?', 'Supabase is empty. Upload ' + src.products.length + ' products and ' + src.sales.length + ' sales from this phone?', 'Upload now');
+  if (!ok) { state = { products: [], sales: [] }; subscribe(); setSync(); render(); return; }
+  toast('Uploading… keep the app open.');
+  try { await uploadAll(src.products, src.sales); state = src; saveLocal(); mode = 'cloud'; subscribe(); toast('Your shop is now in Supabase.'); }
+  catch (e) { state = src; saveLocal(); mode = 'offline'; toast('Upload failed: ' + errText(e)); }
+  setSync(); render();
+}
+
+let refreshing = false;
+async function refresh() {
+  if (!sb || !session || refreshing || mode === 'login' || mode === 'setup') return;
+  refreshing = true;
+  try {
+    await flush();
+    if (outbox.length) { mode = 'offline'; return; }
+    state = await loadCloud(); saveLocal(); mode = 'cloud'; subscribe();
+  } catch (e) {
+    if (isNetErr(e)) mode = 'offline'; else toast('Couldn’t read Supabase: ' + errText(e));
+  } finally { refreshing = false; setSync(); render(); }
+}
+
+/* ---------- live updates from other phones ---------- */
+function subscribe() {
+  if (channel || !sb) return;
+  channel = sb.channel('shop-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, ev => {
+      if (ev.eventType === 'DELETE') state.products = state.products.filter(p => p.sku !== ev.old.sku);
+      else putProduct(rowToProduct(ev.new));
+      saveLocal(); render();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, ev => {
+      if (ev.eventType === 'DELETE') state.sales = state.sales.filter(s => s.id !== ev.old.id);
+      else putSale(rowToSale(ev.new));
+      saveLocal(); render();
+    })
+    .subscribe();
+}
+function unsubscribe() { if (channel && sb) { sb.removeChannel(channel); } channel = null; }
+
+function setSync() {
+  const el = $('#sync'); const n = outbox.length;
+  let cls = '', txt = 'Loading…';
+  if (mode === 'setup') { cls = 'local'; txt = 'Supabase not set up'; }
+  else if (mode === 'login') txt = 'Signed out';
+  else if (flushP && n) txt = 'Saving…';
+  else if (n) { cls = 'local'; txt = n + (n === 1 ? ' change' : ' changes') + ' waiting'; }
+  else if (mode === 'cloud') { cls = 'on'; txt = 'Saved in Supabase'; }
+  else if (mode === 'offline') { cls = 'local'; txt = 'Offline, on this phone'; }
+  el.className = 'sync ' + cls;
+  el.querySelector('span').textContent = txt;
+}
+
+const SEED = {"products": [{"sku": "TE-001", "name": "Yellow", "supplier": "Bajaj Trends", "cost": 895, "landed": 1177.13, "price": 2149, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-002", "name": "Grey 1", "supplier": "Bajaj Trends", "cost": 895, "landed": 1177.13, "price": 2149, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-003", "name": "Blue", "supplier": "Bajaj Trends", "cost": 850, "landed": 1117.94, "price": 2049, "stock": {"L": 1, "XL": 1}, "flag": ""}, {"sku": "TE-004", "name": "Orange", "supplier": "Bajaj Trends", "cost": 850, "landed": 1117.94, "price": 2049, "stock": {"M": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-005", "name": "Pink 1", "supplier": "Bajaj Trends", "cost": 850, "landed": 1117.94, "price": 2049, "stock": {"M": 1, "L": 1}, "flag": ""}, {"sku": "TE-006", "name": "Pink 2", "supplier": "Bajaj Trends", "cost": 850, "landed": 1117.94, "price": 2049, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1, "XXXL": 1}, "flag": "Bill says 4 pcs but 5 entered. Recount."}, {"sku": "TE-007", "name": "Peach", "supplier": "Bajaj Trends", "cost": 685, "landed": 900.93, "price": 1649, "stock": {"XL": 1, "XXL": 1}, "flag": "Bill says 1 pc but 2 entered. Recount."}, {"sku": "TE-008", "name": "White", "supplier": "Bajaj Trends", "cost": 685, "landed": 900.93, "price": 1649, "stock": {"L": 1, "XL": 1, "XXL": 1, "XXXL": 1}, "flag": ""}, {"sku": "TE-009", "name": "Elephant", "supplier": "Bajaj Trends", "cost": 875, "landed": 1150.83, "price": 2099, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-010", "name": "Blue", "supplier": "Bajaj Trends", "cost": 605, "landed": 795.71, "price": 1449, "stock": {}, "flag": "Quantity not confirmed. Count and enter stock."}, {"sku": "TE-011", "name": "Red & Yellow", "supplier": "Bajaj Trends", "cost": 605, "landed": 795.71, "price": 1449, "stock": {"XXL": 2, "XXXL": 2}, "flag": ""}, {"sku": "TE-012", "name": "Sky Blue", "supplier": "Bajaj Trends", "cost": 675, "landed": 887.78, "price": 1649, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-013", "name": "Red", "supplier": "Bajaj Trends", "cost": 765, "landed": 1006.15, "price": 1849, "stock": {"M": 1, "XL": 1}, "flag": ""}, {"sku": "TE-014", "name": "Pink", "supplier": "Bajaj Trends", "cost": 765, "landed": 1006.15, "price": 1849, "stock": {"L": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-015", "name": "Off White Co-ord", "supplier": "Bajaj Trends", "cost": 915, "landed": 1203.43, "price": 1749, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-016", "name": "Yellow Co-ord", "supplier": "Bajaj Trends", "cost": 1250, "landed": 1644.04, "price": 2349, "stock": {"M": 1, "XL": 1, "XXL": 1, "XXXL": 1}, "flag": "M was sold but not in opening stock. Recount."}, {"sku": "TE-017", "name": "Black Purple Co-ord", "supplier": "Bajaj Trends", "cost": 1195, "landed": 1571.7, "price": 2449, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-018", "name": "White Co-ord", "supplier": "Bajaj Trends", "cost": 1095, "landed": 1440.18, "price": 1849, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-019", "name": "Rust", "supplier": "Bajaj Trends", "cost": 765, "landed": 1006.15, "price": 1849, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-020", "name": "Pink", "supplier": "Bajaj Trends", "cost": 935, "landed": 1229.74, "price": 1999, "stock": {"M": 1, "L": 1}, "flag": ""}, {"sku": "TE-021", "name": "Red Bandhani", "supplier": "Bajaj Trends", "cost": 550, "landed": 723.38, "price": 1349, "stock": {}, "flag": "Quantity not confirmed. Count and enter stock."}, {"sku": "TE-022", "name": "Orange Bandhani", "supplier": "Bajaj Trends", "cost": 550, "landed": 723.38, "price": 1349, "stock": {}, "flag": "Quantity not confirmed. Count and enter stock."}, {"sku": "TE-023", "name": "Unicorn Green", "supplier": "Bajaj Trends", "cost": 1675, "landed": 2203.01, "price": 2999, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-024", "name": "Jeans", "supplier": "Bajaj Trends", "cost": 1350, "landed": 1775.56, "price": 2399, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": "M was sold but not in opening stock. Recount."}, {"sku": "TE-025", "name": "Blue Green", "supplier": "Bajaj Trends", "cost": 690, "landed": 907.51, "price": 1699, "stock": {}, "flag": "Quantity not confirmed. Count and enter stock."}, {"sku": "TE-026", "name": "Green", "supplier": "Bajaj Trends", "cost": 691, "landed": 908.82, "price": 1699, "stock": {}, "flag": "Quantity not confirmed. Count and enter stock."}, {"sku": "TE-027", "name": "Black Co-ord", "supplier": "Bajaj Trends", "cost": 455, "landed": 598.43, "price": 1099, "stock": {"XL": 1, "XXL": 1, "XXXL": 1}, "flag": ""}, {"sku": "TE-028", "name": "Brown Co-ord", "supplier": "Bajaj Trends", "cost": 990, "landed": 1302.08, "price": 2399, "stock": {}, "flag": "Quantity not confirmed. Count and enter stock."}, {"sku": "TE-029", "name": "Pink Anarkali", "supplier": "Label Blessings", "cost": 2695, "landed": 3544.54, "price": 4749, "stock": {"XL": 1}, "flag": ""}, {"sku": "TE-030", "name": "Black Anarkali", "supplier": "Label Blessings", "cost": 2695, "landed": 3544.54, "price": 4749, "stock": {"L": 1}, "flag": ""}, {"sku": "TE-031", "name": "Pink", "supplier": "Label Blessings", "cost": 1795, "landed": 2360.84, "price": 3549, "stock": {"M": 1, "L": 1}, "flag": ""}, {"sku": "TE-032", "name": "Ivory", "supplier": "Label Blessings", "cost": 1695, "landed": 2229.31, "price": 3349, "stock": {"M": 1, "L": 1}, "flag": ""}, {"sku": "TE-033", "name": "Peach Cutwork", "supplier": "Label Blessings", "cost": 1695, "landed": 2229.31, "price": 3199, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-034", "name": "Peach", "supplier": "Label Blessings", "cost": 2795, "landed": 3676.06, "price": 4949, "stock": {"M": 1, "XL": 1}, "flag": ""}, {"sku": "TE-035", "name": "Lilac Purple", "supplier": "Label Blessings", "cost": 2695, "landed": 3544.54, "price": 4749, "stock": {"M": 1, "XL": 1}, "flag": ""}, {"sku": "TE-036", "name": "Grey & Purple", "supplier": "Label Blessings", "cost": 2695, "landed": 3544.54, "price": 4749, "stock": {"M": 1, "L": 1}, "flag": ""}, {"sku": "TE-037", "name": "Golden", "supplier": "Label Blessings", "cost": 1395, "landed": 1834.74, "price": 2849, "stock": {"L": 1, "XL": 1}, "flag": ""}, {"sku": "TE-038", "name": "Blue & Peach", "supplier": "Label Blessings", "cost": 1695, "landed": 2229.31, "price": 3099, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-039", "name": "Brown / Cream", "supplier": "Label Blessings", "cost": 1595, "landed": 2097.79, "price": 2799, "stock": {"M": 1, "L": 1, "XL": 1, "XXL": 1}, "flag": ""}, {"sku": "TE-040", "name": "Rust", "supplier": "Label Blessings", "cost": 2795, "landed": 3676.06, "price": 4949, "stock": {"XXL": 1}, "flag": ""}, {"sku": "TE-041", "name": "Ivory Brown", "supplier": "Label Blessings", "cost": 2395, "landed": 3149.97, "price": 4949, "stock": {"M": 1, "XL": 1}, "flag": ""}, {"sku": "TE-042", "name": "Ivory", "supplier": "Label Blessings", "cost": 2695, "landed": 3544.54, "price": 5499, "stock": {"M": 1, "L": 1}, "flag": ""}, {"sku": "TE-043", "name": "Copper", "supplier": "Label Blessings", "cost": 1295, "landed": 1703.22, "price": 3099, "stock": {"M": 1, "XL": 1}, "flag": ""}, {"sku": "TE-044", "name": "Co-Set Green", "supplier": "Label Blessings", "cost": 995, "landed": 1308.65, "price": 2399, "stock": {}, "flag": "Quantity not confirmed. Count and enter stock."}, {"sku": "TE-045", "name": "Ladies Top 6106 (1)", "supplier": "Vayolette Shirts", "cost": 320, "landed": 420.87, "price": 649, "stock": {"L": 2}, "flag": ""}, {"sku": "TE-046", "name": "Ladies Top 6106 (2)", "supplier": "Vayolette Shirts", "cost": 305, "landed": 401.14, "price": 599, "stock": {"L": 3}, "flag": ""}, {"sku": "TE-047", "name": "Ladies Top 6106 (3)", "supplier": "Vayolette Shirts", "cost": 320, "landed": 420.87, "price": 649, "stock": {"L": 3}, "flag": ""}, {"sku": "TE-048", "name": "Ladies Top 6106 (4)", "supplier": "Vayolette Shirts", "cost": 300, "landed": 394.57, "price": 649, "stock": {"L": 2}, "flag": ""}, {"sku": "TE-049", "name": "Ladies Top 6106 (5)", "supplier": "Vayolette Shirts", "cost": 290, "landed": 381.42, "price": 549, "stock": {"L": 6}, "flag": ""}, {"sku": "TE-050", "name": "Ladies Top 6106 (6)", "supplier": "Vayolette Shirts", "cost": 270, "landed": 355.11, "price": 549, "stock": {"L": 3}, "flag": ""}, {"sku": "TE-051", "name": "Ladies Top 6106 (7)", "supplier": "Vayolette Shirts", "cost": 260, "landed": 341.96, "price": 549, "stock": {"L": 4}, "flag": ""}, {"sku": "TE-052", "name": "Ladies Top 6106 (8)", "supplier": "Vayolette Shirts", "cost": 335, "landed": 440.6, "price": 699, "stock": {"L": 3}, "flag": ""}, {"sku": "TE-053", "name": "Ladies Top 6106 (9)", "supplier": "Vayolette Shirts", "cost": 365, "landed": 480.06, "price": 749, "stock": {"L": 3}, "flag": ""}, {"sku": "TE-054", "name": "Blue Cord", "supplier": "Radhika", "cost": 1095, "landed": 1440.18, "price": 2099, "stock": {"M": 1, "L": 1, "XL": 1}, "flag": ""}, {"sku": "TE-055", "name": "Pink Cord", "supplier": "Radhika", "cost": 1295, "landed": 1703.22, "price": 2449, "stock": {"M": 1, "L": 1}, "flag": ""}, {"sku": "TE-056", "name": "Green Dress", "supplier": "Radhika", "cost": 1425, "landed": 1874.2, "price": 2699, "stock": {"M": 1, "L": 1}, "flag": ""}, {"sku": "TE-057", "name": "Orange Dress", "supplier": "Radhika", "cost": 850, "landed": 1117.94, "price": 1599, "stock": {"L": 1, "XL": 1}, "flag": ""}, {"sku": "TE-058", "name": "Mustard", "supplier": "Ridhi Sidhi", "cost": 1695, "landed": 2229.31, "price": 3199, "stock": {"4XL": 1}, "flag": ""}, {"sku": "TE-059", "name": "Gota Work", "supplier": "No Name", "cost": 650, "landed": 854.9, "price": 1449, "stock": {"XL": 2, "XXL": 1}, "flag": ""}], "sales": [{"id": "xl01", "sku": "TE-001", "size": "XXL", "qty": 1, "price": 2149, "cost": 1177.13, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000001}, {"id": "xl02", "sku": "TE-002", "size": "M", "qty": 1, "price": 2149, "cost": 1177.13, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000002}, {"id": "xl03", "sku": "TE-002", "size": "L", "qty": 1, "price": 2149, "cost": 1177.13, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000003}, {"id": "xl04", "sku": "TE-007", "size": "XXL", "qty": 1, "price": 1649, "cost": 900.93, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000004}, {"id": "xl05", "sku": "TE-008", "size": "XXL", "qty": 1, "price": 1649, "cost": 900.93, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000005}, {"id": "xl06", "sku": "TE-008", "size": "XXXL", "qty": 1, "price": 1649, "cost": 900.93, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000006}, {"id": "xl07", "sku": "TE-011", "size": "XXXL", "qty": 1, "price": 1449, "cost": 795.71, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000007}, {"id": "xl08", "sku": "TE-014", "size": "XXL", "qty": 1, "price": 1849, "cost": 1006.15, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000008}, {"id": "xl09", "sku": "TE-015", "size": "L", "qty": 1, "price": 1749, "cost": 1203.43, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000009}, {"id": "xl10", "sku": "TE-016", "size": "M", "qty": 1, "price": 2349, "cost": 1644.04, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000010}, {"id": "xl11", "sku": "TE-023", "size": "M", "qty": 1, "price": 2999, "cost": 2203.01, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000011}, {"id": "xl12", "sku": "TE-023", "size": "XXL", "qty": 1, "price": 2999, "cost": 2203.01, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000012}, {"id": "xl13", "sku": "TE-024", "size": "M", "qty": 1, "price": 2399, "cost": 1775.56, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000013}, {"id": "xl14", "sku": "TE-024", "size": "XXL", "qty": 1, "price": 2399, "cost": 1775.56, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000014}, {"id": "xl15", "sku": "TE-027", "size": "XXXL", "qty": 1, "price": 1099, "cost": 598.43, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000015}, {"id": "xl16", "sku": "TE-033", "size": "M", "qty": 1, "price": 3199, "cost": 2229.31, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000016}, {"id": "xl17", "sku": "TE-033", "size": "XXL", "qty": 1, "price": 3199, "cost": 2229.31, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000017}, {"id": "xl18", "sku": "TE-041", "size": "M", "qty": 1, "price": 4949, "cost": 3149.97, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000018}, {"id": "xl19", "sku": "TE-046", "size": "L", "qty": 1, "price": 599, "cost": 401.14, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000019}, {"id": "xl20", "sku": "TE-047", "size": "L", "qty": 1, "price": 649, "cost": 420.87, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000020}, {"id": "xl21", "sku": "TE-048", "size": "L", "qty": 1, "price": 649, "cost": 394.57, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000021}, {"id": "xl22", "sku": "TE-049", "size": "L", "qty": 3, "price": 549, "cost": 381.42, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000022}, {"id": "xl23", "sku": "TE-052", "size": "L", "qty": 1, "price": 699, "cost": 440.6, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000023}, {"id": "xl24", "sku": "TE-054", "size": "M", "qty": 1, "price": 2099, "cost": 1440.18, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000024}, {"id": "xl25", "sku": "TE-054", "size": "XL", "qty": 1, "price": 2099, "cost": 1440.18, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000025}, {"id": "xl26", "sku": "TE-058", "size": "4XL", "qty": 1, "price": 3199, "cost": 2229.31, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000026}, {"id": "xl27", "sku": "TE-059", "size": "XL", "qty": 2, "price": 1449, "cost": 854.9, "pay": "", "date": "2026-10-23", "note": "From Excel (first 5 days)", "ts": 1761200000027}]};
+
+/* ---------- start-up and sign-in ---------- */
+async function boot() {
+  const local = loadLocal(); if (local) state = local;
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
+  if (!configured) { mode = 'setup'; setSync(); render(); return; }
+  if (!window.supabase || !window.supabase.createClient) {
+    mode = 'offline'; setSync(); render();
+    toast('Couldn’t reach Supabase. Showing what’s saved on this phone.');
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'twoedits-auth' } });
+  sb.auth.onAuthStateChange((ev, s) => {
+    session = s;
+    if (ev === 'SIGNED_OUT') { unsubscribe(); mode = 'login'; setSync(); render(); }
+  });
+  const { data } = await sb.auth.getSession();
+  session = data.session;
+  if (!session) { mode = 'login'; setSync(); render(); return; }
+  render();
+  await startCloud();
+}
+
+async function doLogin() {
+  const email = $('#le').value.trim(), password = $('#lp').value;
+  if (!email || !password) { toast('Enter your email and password.'); return; }
+  const b = $('#lgo'); b.disabled = true; b.textContent = 'Signing in…';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    b.disabled = false; b.textContent = 'Sign in';
+    toast(/invalid login/i.test(error.message) ? 'Wrong email or password.' : error.message);
+    return;
+  }
+  session = data.session;
+  render();
+  await startCloud();
+}
+
+async function signOut() {
+  const n = outbox.length;
+  const ok = await askConfirm('Sign out?', n ? n + (n === 1 ? ' change hasn’t' : ' changes haven’t') + ' reached Supabase yet. They stay on this phone and upload after you sign in again.' : 'You can sign in again any time.', 'Sign out', true);
+  if (!ok) return;
+  unsubscribe();
+  await sb.auth.signOut({ scope: 'local' });
+  session = null; mode = 'login'; setSync(); render();
+}
+
+/* ---------- toast & sheets ---------- */
+let toastTimer = null;
+function toast(msg, undo) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status');
+  t.innerHTML = '<span>' + esc(msg) + '</span>' + (undo ? '<button type="button">Undo</button>' : '');
+  if (undo) t.querySelector('button').onclick = () => { t.remove(); undo(); };
+  document.body.appendChild(t);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), undo ? 6000 : 3500);
+}
+function openSheet(html, onMount) {
+  closeSheet();
+  const w = document.createElement('div'); w.className = 'sheet-wrap'; w.id = 'sheet';
+  w.innerHTML = '<div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>' + html + '</div>';
+  w.addEventListener('click', e => { if (e.target === w) closeSheet(); });
+  document.body.appendChild(w);
+  onMount && onMount(w.querySelector('.sheet'));
+}
+function closeSheet() { const s = $('#sheet'); if (s) s.remove(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+function askConfirm(title, text, okLabel, danger) {
+  return new Promise(res => {
+    openSheet('<h2>' + esc(title) + '</h2><p class="lead">' + esc(text) + '</p><div class="actions"><button class="btn ghost" data-a="no">Cancel</button><button class="btn ' + (danger ? 'danger' : '') + '" data-a="yes">' + esc(okLabel) + '</button></div>', sh => {
+      sh.querySelector('[data-a=no]').onclick = () => { closeSheet(); res(false); };
+      sh.querySelector('[data-a=yes]').onclick = () => { closeSheet(); res(true); };
+    });
+  });
+}
+
+/* ---------- render ---------- */
+function render() {
+  const gated = mode === 'setup' || mode === 'login';
+  $('nav.tabs').hidden = gated;
+  const v = $('#view');
+  if (mode === 'setup') { v.innerHTML = viewSetup(); return; }
+  if (mode === 'login') {
+    if (!$('#le')) { v.innerHTML = viewLogin(); $('#lgo').onclick = doLogin; $('#lp').onkeydown = e => { if (e.key === 'Enter') doLogin(); }; }
+    return;
+  }
+  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === ui.tab ? 'page' : 'false'));
+  const keepFocus = document.activeElement && document.activeElement.id === 'q';
+  const caret = keepFocus ? document.activeElement.selectionStart : null;
+  if (ui.tab === 'sell') v.innerHTML = viewSell();
+  else if (ui.tab === 'stock') v.innerHTML = viewStock();
+  else if (ui.tab === 'sales') v.innerHTML = viewSales();
+  else v.innerHTML = viewReport();
+  if (keepFocus) { const q = $('#q'); if (q) { q.focus(); try { q.setSelectionRange(caret, caret); } catch (e) {} } }
+  bindView();
+}
+
+function viewSetup() {
+  return '<div class="card gate"><h2>Connect Supabase</h2><p class="hint" style="margin-top:0">Open this file in a text editor and find <code>SUPABASE_URL</code> and <code>SUPABASE_KEY</code> near the top of the script. Paste in the Project URL and the anon (or publishable) key from Supabase, under Project Settings, API. Save the file and open it again.</p></div>';
+}
+function viewLogin() {
+  return '<div class="card gate"><h2>Sign in to your shop</h2><p class="hint" style="margin:0 0 12px">Use the shop login you created in Supabase.</p>' +
+    '<div class="field"><label for="le">Email</label><input id="le" type="email" autocomplete="username" inputmode="email"></div>' +
+    '<div class="field"><label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password"></div>' +
+    '<button class="btn block" id="lgo">Sign in</button></div>';
+}
+
+function noProducts() {
+  return '<div class="empty"><b>No products yet</b>' + (mode === 'starting' ? 'Loading your shop…' : 'Add your first product in the Stock tab, or restore a backup from the Report tab.') + '</div>';
+}
+
+function filterProducts() {
+  const q = ui.q.trim().toLowerCase();
+  return state.products.filter(p => {
+    if (ui.tab === 'sell' && ui.supplier !== 'All' && p.supplier !== ui.supplier) return false;
+    if (!q) return true;
+    return (p.name + ' ' + p.sku + ' ' + p.supplier).toLowerCase().includes(q);
+  });
+}
+
+function searchBox(ph) {
+  return '<div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><label class="sr" for="q">Search</label><input id="q" type="search" placeholder="' + ph + '" value="' + esc(ui.q) + '" autocomplete="off"></div>';
+}
+
+function viewSell() {
+  const t = todayStr();
+  const todays = state.sales.filter(s => s.date === t);
+  const amt = todays.reduce((a, s) => a + s.price * (s.qty || 1), 0);
+  const pcs = todays.reduce((a, s) => a + (s.qty || 1), 0);
+  const suppliers = ['All', ...new Set(state.products.map(p => p.supplier).filter(Boolean))];
+  const sold = soldMap();
+  let h = '<div class="strip"><div><div class="sub">Sold today</div><div class="big num">' + rs(amt) + '</div></div><div class="sub num">' + pcs + (pcs === 1 ? ' piece' : ' pieces') + '</div></div>';
+  h += searchBox('Search colour, SKU or supplier');
+  h += '<div class="chips">' + suppliers.map(s => '<button class="chip" data-sup="' + esc(s) + '" aria-pressed="' + (ui.supplier === s) + '">' + esc(s) + '</button>').join('') + '</div>';
+  if (!state.products.length) return h + noProducts();
+  const list = filterProducts();
+  list.sort((a, b) => (totalOf(remainingOf(b, sold)) > 0) - (totalOf(remainingOf(a, sold)) > 0));
+  if (!list.length) return h + '<div class="empty"><b>Nothing matches “' + esc(ui.q) + '”</b>Try a colour, or a SKU like TE-012.</div>';
+  h += list.map(p => {
+    const r = remainingOf(p, sold); const sz = shownSizes(p, r);
+    const btns = sz.length ? sz.map(z => '<button class="sz' + (r[z] < 0 ? ' neg' : '') + '" data-sell="' + esc(p.sku) + '" data-size="' + z + '"' + (r[z] <= 0 ? ' disabled' : '') + '><b>' + z + '</b><small class="num">' + (r[z] <= 0 ? (r[z] < 0 ? r[z] + ' left' : 'sold out') : r[z] + ' left') + '</small></button>').join('')
+      : '<span class="hint">No stock entered. Add it in the Stock tab.</span>';
+    return '<article class="prod"><div class="prod-head"><div><div class="name">' + esc(p.name) + '</div><div class="meta"><span>' + esc(p.sku) + '</span><span>' + esc(p.supplier) + '</span></div></div><div class="price num">' + rs(p.price) + '</div></div><div class="sizes">' + btns + '</div></article>';
+  }).join('');
+  return h;
+}
+
+function stockStatus(p, r) {
+  const tot = totalOf(r);
+  const neg = SIZES.some(z => r[z] < 0);
+  return { tot, neg, out: tot <= 0, low: tot > 0 && SIZES.some(z => (p.stock?.[z] || 0) > 0 && r[z] === 0), check: neg || !!p.flag };
+}
+
+function viewStock() {
+  const sold = soldMap();
+  let pcs = 0, atCost = 0, atPrice = 0;
+  const rows = state.products.map(p => { const r = remainingOf(p, sold); const st = stockStatus(p, r); const t = Math.max(0, st.tot); pcs += t; atCost += t * (p.landed || p.cost || 0); atPrice += t * (p.price || 0); return { p, r, st }; });
+  let h = '<div class="strip"><div><div class="sub">In the shop now</div><div class="big num">' + pcs + ' pcs</div></div><div class="sub num" style="text-align:right">' + rs(atCost) + ' at cost<br>' + rs(atPrice) + ' at selling price</div></div>';
+  h += searchBox('Search stock');
+  const counts = { all: rows.length, low: rows.filter(x => x.st.low).length, out: rows.filter(x => x.st.out).length, check: rows.filter(x => x.st.check).length };
+  const f = [['all','All'],['low','Size sold out'],['out','Fully sold out'],['check','Needs checking']];
+  h += '<div class="chips">' + f.map(([k, l]) => '<button class="chip" data-sf="' + k + '" aria-pressed="' + (ui.stockFilter === k) + '">' + l + ' <span class="num">' + counts[k] + '</span></button>').join('') + '</div>';
+  if (!state.products.length) return h + noProducts() + '<button class="btn fab" data-add>+ Add product</button>';
+  const q = ui.q.trim().toLowerCase();
+  const list = rows.filter(x => (!q || (x.p.name + ' ' + x.p.sku + ' ' + x.p.supplier).toLowerCase().includes(q)) && (ui.stockFilter === 'all' || x.st[ui.stockFilter]));
+  if (!list.length) h += '<div class="empty"><b>Nothing here</b>No products match this filter.</div>';
+  h += list.map(({ p, r, st }) => {
+    const sz = shownSizes(p, r);
+    const pills = sz.length ? sz.map(z => '<div class="pill' + (r[z] < 0 ? ' neg' : r[z] === 0 ? ' zero' : '') + '"><b class="num">' + r[z] + '</b><small>' + z + '</small></div>').join('') : '<span class="hint">No stock entered yet. Tap to add.</span>';
+    const flag = st.neg ? '<div class="flag">Sold more than stocked. Recount this item.</div>' : p.flag ? '<div class="flag">' + esc(p.flag) + '</div>' : '';
+    return '<article class="prod tap" data-edit="' + esc(p.sku) + '" tabindex="0"><div class="prod-head"><div><div class="name">' + esc(p.name) + '</div><div class="meta"><span>' + esc(p.sku) + '</span><span>' + esc(p.supplier) + '</span><span class="num">Cost ' + rs(p.landed || p.cost) + '</span></div></div><div class="price num">' + rs(p.price) + '</div></div>' + flag + '<div class="sizes">' + pills + '</div></article>';
+  }).join('');
+  h += '<button class="btn fab" data-add>+ Add product</button>';
+  return h;
+}
+
+function viewSales() {
+  if (!state.sales.length) return '<div class="empty"><b>No sales yet</b>Sales you record in the Sell tab show up here.</div>';
+  const sorted = [...state.sales].sort((a, b) => (b.date + (b.ts || 0)).localeCompare(a.date + (a.ts || 0)) || (b.ts || 0) - (a.ts || 0));
+  const shown = sorted.slice(0, ui.salesLimit);
+  const byDay = {};
+  for (const s of shown) (byDay[s.date] ||= []).push(s);
+  const dayTotals = {};
+  for (const s of state.sales) dayTotals[s.date] = (dayTotals[s.date] || 0) + s.price * (s.qty || 1);
+  let h = '';
+  for (const d of Object.keys(byDay).sort().reverse()) {
+    const pcs = state.sales.filter(s => s.date === d).reduce((a, s) => a + (s.qty || 1), 0);
+    h += '<section class="day"><div class="day-h"><span>' + niceDate(d) + '</span><span class="num">' + rs(dayTotals[d]) + ', ' + pcs + ' pcs</span></div>';
+    h += byDay[d].map(s => {
+      const p = findP(s.sku);
+      const disc = p && s.price < p.price ? ' (discount ' + rs(p.price - s.price) + ')' : '';
+      return '<div class="row"><div class="main"><div class="t">' + esc(p ? p.name : s.sku) + ', ' + esc(s.size) + (s.qty > 1 ? ' × ' + s.qty : '') + '</div><div class="s">' + esc(s.sku) + (s.pay ? ', ' + esc(s.pay) : '') + esc(disc) + (s.note ? ', ' + esc(s.note) : '') + '</div></div><div class="amt num">' + rs(s.price * (s.qty || 1)) + '</div><button class="x" data-del="' + esc(s.id) + '" aria-label="Delete this sale">×</button></div>';
+    }).join('');
+    h += '</section>';
+  }
+  if (sorted.length > shown.length) h += '<button class="btn ghost block" data-more>Show older sales</button>';
+  return h;
+}
+
+function periodSales() {
+  const t = new Date(); const ts = todayStr(t);
+  if (ui.period === 'today') return state.sales.filter(s => s.date === ts);
+  if (ui.period === '7d') { const from = todayStr(new Date(Date.now() - 6 * 864e5)); return state.sales.filter(s => s.date >= from); }
+  if (ui.period === 'month') { const m = ts.slice(0, 7); return state.sales.filter(s => s.date.startsWith(m)); }
+  return state.sales;
+}
+
+function viewReport() {
+  const periods = [['today','Today'],['7d','Last 7 days'],['month','This month'],['all','All time']];
+  let h = '<div class="chips">' + periods.map(([k, l]) => '<button class="chip" data-per="' + k + '" aria-pressed="' + (ui.period === k) + '">' + l + '</button>').join('') + '</div>';
+  const S = periodSales();
+  const rev = S.reduce((a, s) => a + s.price * (s.qty || 1), 0);
+  const pcs = S.reduce((a, s) => a + (s.qty || 1), 0);
+  const cost = S.reduce((a, s) => a + (s.cost || 0) * (s.qty || 1), 0);
+  const profit = rev - cost;
+  const days = new Set(S.map(s => s.date)).size;
+  h += '<div class="card"><div class="kpi"><div class="l">Sales</div><div class="hero-v num">' + rs(rev) + '</div></div><div class="kpis" style="margin-top:12px">' +
+    '<div class="kpi"><div class="v num">' + pcs + '</div><div class="l">Pieces sold</div></div>' +
+    '<div class="kpi"><div class="v num">' + rs(profit) + '</div><div class="l">Profit after all costs' + (rev ? ' (' + Math.round(profit / rev * 100) + '%)' : '') + '</div></div>' +
+    '<div class="kpi"><div class="v num">' + rs(pcs ? rev / pcs : 0) + '</div><div class="l">Average per piece</div></div>' +
+    '<div class="kpi"><div class="v num">' + rs(days ? rev / days : 0) + '</div><div class="l">Average per selling day</div></div></div>';
+  const pay = {}; S.forEach(s => { const k = s.pay || 'Not noted'; pay[k] = (pay[k] || 0) + s.price * (s.qty || 1); });
+  if (Object.keys(pay).length) h += '<p class="hint" style="margin-top:12px">' + Object.entries(pay).map(([k, v]) => esc(k) + ' ' + rs(v)).join(', ') + '</p>';
+  h += '</div>';
+
+  if (!S.length) h += '<div class="empty"><b>No sales in this period</b>Pick a longer period above.</div>';
+  else {
+    const sold = soldMap(); const soldP = {}; let stockNow = {};
+    SIZES.forEach(z => { soldP[z] = 0; stockNow[z] = 0; });
+    S.forEach(s => soldP[s.size] = (soldP[s.size] || 0) + (s.qty || 1));
+    state.products.forEach(p => { const r = remainingOf(p, sold); SIZES.forEach(z => stockNow[z] += Math.max(0, r[z])); });
+    const totStock = SIZES.reduce((a, z) => a + stockNow[z], 0) || 1;
+    const maxS = Math.max(1, ...SIZES.map(z => soldP[z]));
+    const rowsZ = SIZES.filter(z => soldP[z] || stockNow[z]);
+    h += '<div class="card"><h2>Which sizes sell</h2><div class="scroll-x"><table><thead><tr><th>Size</th><th class="r">Sold</th><th></th><th class="r">Share of sales</th><th class="r">In shop</th></tr></thead><tbody>' +
+      rowsZ.map(z => '<tr><td><b>' + z + '</b></td><td class="r num">' + soldP[z] + '</td><td style="width:30%"><div class="bar"><span style="width:' + (soldP[z] / maxS * 100) + '%"></span></div></td><td class="r num">' + Math.round(soldP[z] / pcs * 100) + '%</td><td class="r num">' + stockNow[z] + ' (' + Math.round(stockNow[z] / totStock * 100) + '%)</td></tr>').join('') +
+      '</tbody></table></div>';
+    const short = rowsZ.filter(z => soldP[z] / pcs - stockNow[z] / totStock > 0.07);
+    const heavy = rowsZ.filter(z => stockNow[z] / totStock - soldP[z] / pcs > 0.1);
+    if (short.length || heavy.length) h += '<div class="tip">' + (short.length ? 'Buy more <b>' + short.join(', ') + '</b>: they sell faster than you stock them. ' : '') + (heavy.length ? 'Go easy on <b>' + heavy.join(', ') + '</b>: you have more of these than customers are buying.' : '') + '</div>';
+    h += '</div>';
+
+    const sup = {};
+    state.products.forEach(p => { const k = p.supplier || 'Other'; sup[k] ||= { pcs: 0, rev: 0, inStock: 0, everSold: 0 }; const r = remainingOf(p, sold); sup[k].inStock += Math.max(0, totalOf(r)); });
+    state.sales.forEach(s => { const p = findP(s.sku); const k = (p && p.supplier) || 'Other'; sup[k] ||= { pcs: 0, rev: 0, inStock: 0, everSold: 0 }; sup[k].everSold += (s.qty || 1); });
+    S.forEach(s => { const p = findP(s.sku); const k = (p && p.supplier) || 'Other'; sup[k].pcs += (s.qty || 1); sup[k].rev += s.price * (s.qty || 1); });
+    const supRows = Object.entries(sup).sort((a, b) => b[1].rev - a[1].rev);
+    h += '<div class="card"><h2>By supplier</h2><div class="scroll-x"><table><thead><tr><th>Supplier</th><th class="r">Pcs</th><th class="r">Sales</th><th class="r">Sold so far</th></tr></thead><tbody>' +
+      supRows.map(([k, v]) => { const st = v.everSold + v.inStock; return '<tr><td>' + esc(k) + '</td><td class="r num">' + v.pcs + '</td><td class="r num">' + rs(v.rev) + '</td><td class="r num">' + (st ? Math.round(v.everSold / st * 100) : 0) + '%</td></tr>'; }).join('') +
+      '</tbody></table></div><p class="hint">“Sold so far” is the share of everything bought from that supplier that has sold, across all time.</p></div>';
+
+    const tp = {};
+    S.forEach(s => { tp[s.sku] ||= { pcs: 0, rev: 0 }; tp[s.sku].pcs += (s.qty || 1); tp[s.sku].rev += s.price * (s.qty || 1); });
+    const top = Object.entries(tp).sort((a, b) => b[1].rev - a[1].rev).slice(0, 6);
+    h += '<div class="card"><h2>Best sellers</h2><table><tbody>' + top.map(([k, v]) => { const p = findP(k); return '<tr><td>' + esc(p ? p.name : k) + '<div class="hint">' + esc(k) + '</div></td><td class="r num">' + v.pcs + ' pcs</td><td class="r num"><b>' + rs(v.rev) + '</b></td></tr>'; }).join('') + '</tbody></table></div>';
+  }
+
+  const bought = state.products.reduce((a, p) => a + SIZES.reduce((b, z) => b + (p.stock?.[z] || 0), 0) * (p.landed || p.cost || 0), 0);
+  const allRev = state.sales.reduce((a, s) => a + s.price * (s.qty || 1), 0);
+  if (bought) h += '<div class="card"><h2>Money back from stock</h2><div class="kpis"><div class="kpi"><div class="v num">' + rs(allRev) + '</div><div class="l">Sales, all time</div></div><div class="kpi"><div class="v num">' + rs(bought) + '</div><div class="l">Spent on stock, incl. expenses</div></div></div><div class="bar" style="margin-top:12px;height:10px"><span style="width:' + Math.min(100, allRev / bought * 100) + '%"></span></div><p class="hint">' + Math.round(allRev / bought * 100) + '% of what you spent has come back as sales.</p></div>';
+
+  const who = session && session.user && session.user.email ? 'Signed in as ' + esc(session.user.email) + '. ' : '';
+  h += '<div class="card"><h2>Account and backup</h2><p class="hint" style="margin:0 0 10px">' + who + 'Stock and sales are saved in Supabase, and this phone keeps a copy so the app keeps working without internet. Changes made offline upload by themselves when you’re back online. A weekly backup file is still a good idea.</p><div style="display:grid;gap:8px">' +
+    (sb && session ? '<button class="btn ghost block" data-sync>Sync now</button>' : '') +
+    '<button class="btn ghost block" data-exp="json">Download full backup</button><button class="btn ghost block" data-exp="stock">Download stock as CSV</button><button class="btn ghost block" data-exp="sales">Download sales as CSV</button><label class="btn ghost block" style="text-align:center">Restore from backup<input type="file" accept=".json,application/json" id="restore" class="sr"></label>' +
+    (sb && session ? '<button class="btn danger block" data-out>Sign out</button>' : '') + '</div></div>';
+  return h;
+}
+
+/* ---------- interactions ---------- */
+function bindView() {
+  const q = $('#q');
+  if (q) q.oninput = e => { ui.q = e.target.value; render(); };
+  document.querySelectorAll('[data-sup]').forEach(b => b.onclick = () => { ui.supplier = b.dataset.sup; render(); });
+  document.querySelectorAll('[data-sf]').forEach(b => b.onclick = () => { ui.stockFilter = b.dataset.sf; render(); });
+  document.querySelectorAll('[data-per]').forEach(b => b.onclick = () => { ui.period = b.dataset.per; render(); });
+  document.querySelectorAll('[data-sell]').forEach(b => b.onclick = () => sellSheet(b.dataset.sell, b.dataset.size));
+  document.querySelectorAll('[data-edit]').forEach(b => { b.onclick = () => editSheet(b.dataset.edit); b.onkeydown = e => { if (e.key === 'Enter') editSheet(b.dataset.edit); }; });
+  document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => editSheet(null));
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => deleteSale(b.dataset.del));
+  const more = document.querySelector('[data-more]'); if (more) more.onclick = () => { ui.salesLimit += 60; render(); };
+  document.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => exportData(b.dataset.exp));
+  const rf = $('#restore'); if (rf) rf.onchange = e => { const f = e.target.files[0]; e.target.value = ''; restore(f); };
+  const sy = document.querySelector('[data-sync]'); if (sy) sy.onclick = async () => { await refresh(); toast(mode === 'cloud' && !outbox.length ? 'Everything is saved in Supabase.' : 'No connection. Changes will upload later.'); };
+  const so = document.querySelector('[data-out]'); if (so) so.onclick = signOut;
+}
+
+document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => { ui.tab = b.dataset.tab; ui.q = ''; render(); window.scrollTo(0, 0); });
+
+function sellSheet(sku, size) {
+  const p = findP(sku); if (!p) return;
+  const r = remainingOf(p, soldMap());
+  let qty = 1, pay = 'Cash';
+  openSheet(
+    '<h2>' + esc(p.name) + ', size ' + size + '</h2><p class="lead">' + esc(p.sku) + ', ' + r[size] + ' left in this size</p>' +
+    '<div class="two"><div class="field"><label for="sp">Price per piece (₹)</label><input id="sp" type="number" inputmode="numeric" min="0" value="' + (p.price || 0) + '"></div>' +
+    '<div class="field"><label>Pieces</label><div class="stepper"><button type="button" data-q="-1" aria-label="One less">−</button><span id="sq" class="num">1</span><button type="button" data-q="1" aria-label="One more">+</button></div></div></div>' +
+    '<div class="field"><label>Paid by</label><div class="seg">' + PAYS.map(x => '<button type="button" data-pay="' + x + '" aria-pressed="' + (x === pay) + '">' + x + '</button>').join('') + '</div></div>' +
+    '<div class="two"><div class="field"><label for="sd">Date</label><input id="sd" type="date" value="' + todayStr() + '"></div><div class="field"><label for="sn">Note (optional)</label><input id="sn" type="text" placeholder="Customer name…"></div></div>' +
+    '<div class="total"><span>Total</span><b class="num" id="stot"></b></div>' +
+    '<div class="actions"><button class="btn ghost" data-c>Cancel</button><button class="btn" data-ok>Record sale</button></div>',
+    sh => {
+      const upd = () => { sh.querySelector('#sq').textContent = qty; sh.querySelector('#stot').textContent = rs((+sh.querySelector('#sp').value || 0) * qty); };
+      upd();
+      sh.querySelector('#sp').oninput = upd;
+      sh.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { qty = Math.min(Math.max(1, qty + +b.dataset.q), Math.max(1, r[size])); upd(); });
+      sh.querySelectorAll('[data-pay]').forEach(b => b.onclick = () => { pay = b.dataset.pay; sh.querySelectorAll('[data-pay]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+      sh.querySelector('[data-c]').onclick = closeSheet;
+      sh.querySelector('[data-ok]').onclick = async () => {
+        const price = +sh.querySelector('#sp').value;
+        if (!(price >= 0)) { toast('Enter a price.'); return; }
+        const s = { id: uid(), sku: p.sku, size, qty, price, cost: p.landed || p.cost || 0, pay, date: sh.querySelector('#sd').value || todayStr(), note: sh.querySelector('#sn').value.trim(), ts: Date.now() };
+        state.sales.push(s); saveLocal(); closeSheet(); render();
+        toast('Sold ' + p.name + ', ' + size + ' for ' + rs(price * qty), () => removeSale(s.id));
+        await write({ t: 'up_sale', row: saleToRow(s) });
+      };
+    });
+}
+
+async function removeSale(id) {
+  state.sales = state.sales.filter(s => s.id !== id); saveLocal(); render();
+  await write({ t: 'del_sale', id });
+}
+async function deleteSale(id) {
+  const s = state.sales.find(x => x.id === id); if (!s) return;
+  const p = findP(s.sku);
+  const ok = await askConfirm('Delete this sale?', (p ? p.name : s.sku) + ', size ' + s.size + ', ' + rs(s.price * (s.qty || 1)) + '. The piece goes back into stock.', 'Delete sale', true);
+  if (!ok) return;
+  await removeSale(id);
+  toast('Sale deleted. Stock updated.');
+}
+
+function nextSku() {
+  let n = 0; state.products.forEach(p => { const m = /(\d+)$/.exec(p.sku); if (m) n = Math.max(n, +m[1]); });
+  return 'TE-' + String(n + 1).padStart(3, '0');
+}
+
+function editSheet(sku) {
+  const isNew = !sku;
+  const p = isNew ? { sku: nextSku(), name: '', supplier: '', cost: 0, landed: 0, price: 0, stock: {}, flag: '' } : clone(findP(sku));
+  const sold = soldMap();
+  const r = remainingOf(p, sold);
+  const sups = [...new Set(state.products.map(x => x.supplier).filter(Boolean))];
+  const okLabel = isNew ? 'Add product' : 'Save changes';
+  openSheet(
+    '<h2>' + (isNew ? 'Add product' : 'Edit ' + esc(p.name)) + '</h2><p class="lead">' + esc(p.sku) + (isNew ? '' : ', ' + Math.max(0, totalOf(r)) + ' in shop') + '</p>' +
+    '<div class="field"><label for="en">Product, colour or type</label><input id="en" value="' + esc(p.name) + '" placeholder="e.g. Mustard Anarkali"></div>' +
+    '<div class="field"><label for="es">Supplier</label><input id="es" list="suplist" value="' + esc(p.supplier) + '"><datalist id="suplist">' + sups.map(s => '<option value="' + esc(s) + '">').join('') + '</datalist></div>' +
+    '<div class="two"><div class="field"><label for="ec">Purchase price (₹)</label><input id="ec" type="number" inputmode="decimal" value="' + (p.cost || '') + '"></div><div class="field"><label for="el">Cost incl. expenses (₹)</label><input id="el" type="number" inputmode="decimal" value="' + (p.landed || '') + '"></div></div>' +
+    '<div class="field"><label for="ep">Selling price (₹)</label><input id="ep" type="number" inputmode="numeric" value="' + (p.price || '') + '"><div class="hint" id="emargin"></div></div>' +
+    '<div class="field"><label>Pieces in the shop now</label><div class="sizegrid">' + SIZES.map(z => '<div><label for="z' + z + '">' + z + '</label><input id="z' + z + '" type="number" inputmode="numeric" min="0" value="' + Math.max(0, r[z]) + '"></div>').join('') + '</div><div class="hint">Count what’s on the rail. When new stock arrives, add it to these numbers.</div></div>' +
+    (p.flag ? '<div class="field"><label><input type="checkbox" id="ef" style="width:auto;margin-right:6px">Clear note: “' + esc(p.flag) + '”</label></div>' : '') +
+    '<div class="actions" style="margin-top:6px"><button class="btn ghost" data-c>Cancel</button><button class="btn" data-ok>' + okLabel + '</button></div>' +
+    (isNew ? '' : '<button class="btn danger block" style="margin-top:10px" data-rm>Delete product</button>'),
+    sh => {
+      const m = () => { const c = +sh.querySelector('#el').value || +sh.querySelector('#ec').value || 0; const pr = +sh.querySelector('#ep').value || 0; sh.querySelector('#emargin').textContent = pr && c ? 'Profit ' + rs(pr - c) + ' per piece (' + Math.round((pr - c) / pr * 100) + '% margin)' : ''; };
+      ['#ec', '#el', '#ep'].forEach(s => sh.querySelector(s).oninput = m); m();
+      sh.querySelector('[data-c]').onclick = closeSheet;
+      const okBtn = sh.querySelector('[data-ok]');
+      okBtn.onclick = async () => {
+        const name = sh.querySelector('#en').value.trim();
+        if (!name) { toast('Give the product a name.'); return; }
+        p.name = name; p.supplier = sh.querySelector('#es').value.trim();
+        p.cost = +sh.querySelector('#ec').value || 0;
+        p.landed = +sh.querySelector('#el').value || p.cost;
+        p.price = +sh.querySelector('#ep').value || 0;
+        p.stock = {};
+        SIZES.forEach(z => { const now = Math.max(0, Math.floor(+sh.querySelector('#z' + z).value || 0)); const t = now + (sold[p.sku]?.[z] || 0); if (t) p.stock[z] = t; });
+        const ef = sh.querySelector('#ef'); if (ef && ef.checked) p.flag = '';
+        const row = productToRow(p);
+        okBtn.disabled = true; okBtn.textContent = 'Saving…';
+
+        // New product: insert straight into Supabase so a duplicate SKU is caught.
+        if (isNew && mode === 'cloud' && sb && session) {
+          const { error } = await sb.from('products').insert(row);
+          if (!error) { putProduct(p); saveLocal(); closeSheet(); render(); toast('Added to Supabase.'); return; }
+          if (!isNetErr(error)) {
+            okBtn.disabled = false; okBtn.textContent = okLabel;
+            if (error.code === '23505') { closeSheet(); toast(p.sku + ' already exists in Supabase. Refreshed the list, please add it again.'); await refresh(); }
+            else toast('Supabase refused: ' + errText(error));
+            return;
+          }
+          // network problem: fall through and queue it
+        }
+        putProduct(p); saveLocal(); closeSheet(); render();
+        const ok = await write({ t: 'up_product', row });
+        toast(ok ? (isNew ? 'Added to Supabase.' : 'Saved to Supabase.') : 'No connection. Saved on this phone, uploads automatically later.');
+      };
+      const rm = sh.querySelector('[data-rm]');
+      if (rm) rm.onclick = async () => {
+        const ok = await askConfirm('Delete ' + p.name + '?', 'It disappears from stock. Its past sales stay in your sales list and reports.', 'Delete product', true);
+        if (!ok) return;
+        state.products = state.products.filter(x => x.sku !== p.sku); saveLocal(); render();
+        const done = await write({ t: 'del_product', sku: p.sku });
+        toast(done ? 'Product deleted.' : 'Product deleted on this phone. Supabase updates when you’re back online.');
+      };
+    });
+}
+
+/* ---------- export / restore ---------- */
+function csv(rows) { return rows.map(r => r.map(v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\n'); }
+async function exportData(kind) {
+  const d = todayStr(); let filename, data;
+  if (kind === 'json') { filename = 'two-edits-backup-' + d + '.json'; data = JSON.stringify({ app: 'two-edits-shop', version: 1, savedAt: new Date().toISOString(), products: state.products, sales: state.sales }, null, 1); }
+  else if (kind === 'stock') {
+    const sold = soldMap();
+    const rows = [['SKU', 'Product', 'Supplier', 'Purchase price', 'Cost incl. expenses', 'Selling price', ...SIZES.map(z => 'In shop ' + z), 'In shop total', ...SIZES.map(z => 'Sold ' + z), 'Sold total']];
+    state.products.forEach(p => { const r = remainingOf(p, sold); rows.push([p.sku, p.name, p.supplier, p.cost, p.landed, p.price, ...SIZES.map(z => r[z]), totalOf(r), ...SIZES.map(z => sold[p.sku]?.[z] || 0), SIZES.reduce((a, z) => a + (sold[p.sku]?.[z] || 0), 0)]); });
+    filename = 'two-edits-stock-' + d + '.csv'; data = csv(rows);
+  } else {
+    const rows = [['Date', 'SKU', 'Product', 'Supplier', 'Size', 'Pieces', 'Price', 'Total', 'Cost', 'Profit', 'Paid by', 'Note']];
+    [...state.sales].sort((a, b) => a.date.localeCompare(b.date)).forEach(s => { const p = findP(s.sku) || {}; const q = s.qty || 1; rows.push([s.date, s.sku, p.name || '', p.supplier || '', s.size, q, s.price, s.price * q, (s.cost || 0) * q, (s.price - (s.cost || 0)) * q, s.pay || '', s.note || '']); });
+    filename = 'two-edits-sales-' + d + '.csv'; data = csv(rows);
+  }
+  const blob = new Blob([kind === 'json' ? data : '\ufeff' + data], { type: kind === 'json' ? 'application/json' : 'text/csv' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast('Downloaded ' + filename);
+}
+
+async function restore(file) {
+  if (!file) return;
+  let b;
+  try { b = JSON.parse(await file.text()); } catch (e) { toast('That file isn’t a Two Edits backup.'); return; }
+  if (!b || !Array.isArray(b.products) || !Array.isArray(b.sales)) { toast('That file isn’t a Two Edits backup.'); return; }
+  const ok = await askConfirm('Replace everything with this backup?', b.products.length + ' products and ' + b.sales.length + ' sales. What’s in the app and in Supabase now will be replaced.', 'Restore backup', true);
+  if (!ok) return;
+  state = { products: b.products, sales: b.sales }; saveLocal(); render();
+  if (sb && session) {
+    toast('Restoring to Supabase… keep the app open.');
+    outbox.length = 0; saveOutbox();
+    try {
+      let r = await sb.from('sales').delete().neq('id', ''); if (r.error) throw r.error;
+      r = await sb.from('products').delete().neq('sku', ''); if (r.error) throw r.error;
+      await uploadAll(b.products, b.sales);
+      toast('Backup restored to Supabase.');
+      await refresh();
+    } catch (e) {
+      toast('Couldn’t finish restoring to Supabase (' + errText(e) + '). Try again when online.');
+    }
+  } else toast('Backup restored on this phone.');
+  setSync();
+}
+
+/* ---------- keep in sync ---------- */
+window.addEventListener('online', () => refresh());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refresh(); });
+setInterval(() => { if (outbox.length) flush(); }, 30000);
+
+render();
+boot();
+</script>
 </body>
 </html>
